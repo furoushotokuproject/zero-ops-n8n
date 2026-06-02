@@ -61,17 +61,34 @@
     const data = await response.json();
     const raw = data.content.map(x => x.text || '').join('').trim();
 
-    const cleaned = raw
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim();
+    // 多段JSON抽出: コードブロック内・生JSON・最初の{〜最後の}の順で試みる
+    let jsonStr = raw;
+
+    // Strategy 1: ```json ... ``` または ``` ... ``` ブロック内を抽出
+    const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (codeBlockMatch) {
+      jsonStr = codeBlockMatch[1].trim();
+    } else {
+      // Strategy 2: 先頭・末尾のフェンスを除去
+      jsonStr = raw
+        .replace(/^```json\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/```\s*$/i, '')
+        .trim();
+    }
+
+    // Strategy 3: { から最後の } までを切り出し（説明文が前後にある場合）
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace  = jsonStr.lastIndexOf('}');
+    if (firstBrace > 0 && lastBrace > firstBrace) {
+      jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+    }
 
     let workflow;
     try {
-      workflow = JSON.parse(cleaned);
+      workflow = JSON.parse(jsonStr);
     } catch (e) {
-      console.error('JSON parse failed. Raw AI response:', raw);
+      console.error('JSON parse failed. raw:', raw);
       return res.status(500).json({ error: 'Invalid JSON from AI', raw: raw });
     }
 
