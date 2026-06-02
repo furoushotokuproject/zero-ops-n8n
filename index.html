@@ -112,7 +112,7 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
 .idea-card{background:var(--white);border:2px solid var(--border);border-radius:var(--r);padding:16px 20px;cursor:pointer;transition:all .15s;margin-bottom:10px;position:relative}
 .idea-card:hover{border-color:var(--accent-border)}
 .idea-card.selected{border-color:var(--accent);background:var(--accent-light)}
-.idea-card.selected::after{content:'✓ 選択中';position:absolute;top:12px;right:14px;font-size:11px;font-weight:700;color:var(--accent);background:#fff;border:1.5px solid var(--accent-border);border-radius:99px;padding:2px 10px}
+.idea-card.selected::after{content:'? 選択中';position:absolute;top:12px;right:14px;font-size:11px;font-weight:700;color:var(--accent);background:#fff;border:1.5px solid var(--accent-border);border-radius:99px;padding:2px 10px}
 .idea-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;padding-right:80px}
 .idea-desc{font-size:13px;color:var(--text-mid);line-height:1.65;margin-bottom:8px}
 .diff-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px}
@@ -222,20 +222,20 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
 <div class="nav-tabs">
   <button class="nav-tab on" onclick="switchView('generate',this)" id="nav-gen">＋ 新規生成</button>
   <button class="nav-tab" onclick="switchView('library',this)" id="nav-lib">
-    📂 ワークフロー管理 <span class="badge" id="lib-badge">0</span>
+    ?? ワークフロー管理 <span class="badge" id="lib-badge">0</span>
   </button>
 </div>
 
-<!-- ═══ VIEW: GENERATE ═══ -->
+<!-- ??? VIEW: GENERATE ??? -->
 <div class="view active" id="view-generate">
 
   <div class="step-bar">
     <div class="step active" id="stp1"><div class="step-circle" id="sc1">1</div><div class="step-label">入力</div></div>
-    <div class="step-sep">›</div>
+    <div class="step-sep">?</div>
     <div class="step" id="stp2"><div class="step-circle" id="sc2">2</div><div class="step-label">質問</div></div>
-    <div class="step-sep">›</div>
+    <div class="step-sep">?</div>
     <div class="step" id="stp3"><div class="step-circle" id="sc3">3</div><div class="step-label">案を選ぶ</div></div>
-    <div class="step-sep">›</div>
+    <div class="step-sep">?</div>
     <div class="step" id="stp4"><div class="step-circle" id="sc4">4</div><div class="step-label">連携・保存</div></div>
   </div>
 
@@ -287,7 +287,7 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
     <div class="eyebrow">Step 2</div>
     <div class="sec-title">AIが質問します</div>
     <div class="sec-sub">答えていくと自動でシステム案が提示されます。</div>
-    <div class="info-banner">💡「もっと絞りたい」「別の案を出して」と入力するとやり直せます</div>
+    <div class="info-banner">??「もっと絞りたい」「別の案を出して」と入力するとやり直せます</div>
     <div class="chat-wrap" id="chat-log"></div>
     <div class="msg ai" id="typing-row" style="display:none">
       <div class="av ai">AI</div>
@@ -331,12 +331,12 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
       <div class="card-label" style="margin-bottom:12px">連携方法を選んでください</div>
       <div class="cred-choice">
         <div class="choice-card" onclick="selectCredChoice('now',this)">
-          <div class="choice-icon">⚡</div>
+          <div class="choice-icon">?</div>
           <div class="choice-title">今すぐ連携する</div>
           <div class="choice-desc">必要なAPIキーを<br>1つずつ案内します。<br>完了後すぐ動きます。</div>
         </div>
         <div class="choice-card" onclick="selectCredChoice('later',this)">
-          <div class="choice-icon">📁</div>
+          <div class="choice-icon">??</div>
           <div class="choice-title">後で連携する</div>
           <div class="choice-desc">仕様書だけ保存します。<br>連携は後からでもOK。</div>
         </div>
@@ -346,19 +346,19 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
 
     <!-- Credential入力UI -->
     <div id="cred-setup-area" style="display:none">
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">🔑 APIキー・Credential を設定</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">?? APIキー・Credential を設定</div>
       <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px">各サービスのリンクを開いてAPIキーをコピーし、下の欄に貼り付けてください。</div>
       <div class="progress-wrap"><div class="progress-bar" id="cred-progress" style="width:0%"></div></div>
       <div id="cred-steps-list"></div>
       <div class="action-row" style="margin-top:16px">
-        <button class="btn btn-green" id="register-btn" onclick="registerCredentials()">🔗 n8nに登録して保存する</button>
+        <button class="btn btn-green" id="register-btn" onclick="registerCredentials()">?? n8nに登録して保存する</button>
         <button class="btn btn-ghost" onclick="skipToSave()">連携をスキップして保存</button>
       </div>
     </div>
 
     <!-- 保存フォーム -->
     <div class="save-form" id="save-form" style="display:none">
-      <div class="save-form-title">💾 保存設定</div>
+      <div class="save-form-title">?? 保存設定</div>
       <div class="field"><label>ワークフロー名</label><input type="text" id="save-name" placeholder="例: LINE予約受付ワークフロー"></div>
       <div class="field"><label>specs/ フォルダ内のファイル名</label><input type="text" id="save-filename" placeholder="例: line_booking.txt" oninput="updateCmd()"></div>
       <div class="field"><label>実行コマンド（自動生成）</label>
@@ -366,7 +366,7 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
       </div>
       <div class="field"><label>メモ（任意）</label><textarea id="save-memo" rows="2" placeholder="このワークフローについてメモ..."></textarea></div>
       <div class="action-row" style="margin-top:4px">
-        <button class="btn btn-green" onclick="saveWorkflow()">💾 保存する</button>
+        <button class="btn btn-green" onclick="saveWorkflow()">?? 保存する</button>
         <button class="btn btn-ghost" onclick="backToIdeas()">← 案を選び直す</button>
       </div>
     </div>
@@ -376,7 +376,7 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="card-label">生成された仕様書</div>
         <div style="display:flex;gap:6px">
-          <button class="btn-sm btn-sm-ghost" onclick="copySpec()">📋 コピー</button>
+          <button class="btn-sm btn-sm-ghost" onclick="copySpec()">?? コピー</button>
           <button class="btn-sm btn-sm-ghost" onclick="toggleSpecPreview()" id="toggle-spec-btn">▼ 折りたたむ</button>
         </div>
       </div>
@@ -389,7 +389,7 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
 
 </div><!-- /view-generate -->
 
-<!-- ═══ VIEW: LIBRARY ═══ -->
+<!-- ??? VIEW: LIBRARY ??? -->
 <div class="view" id="view-library">
   <div class="lib-header">
     <div>
@@ -406,7 +406,7 @@ textarea::placeholder,input::placeholder{color:var(--text-soft)}
 
 <script>
 // ── Constants ─────────────────────────────────────────────────
-const API_URL = 'https://api.anthropic.com/v1/messages';
+const API_URL = '/api/claude';
 const MODEL = 'claude-haiku-4-5-20251001';
 const N8N = 'http://localhost:5679';
 const LS_KEY = 'zero_ops_n8n_v4';
@@ -536,7 +536,7 @@ const CRED_DEFS = {
 const AI_SYSTEM = `あなたはn8n自動化の設計専門家です。ユーザーの要望をヒアリングして最適なシステム案を提案します。
 ルール:
 - 1回の返答で質問は最大2個まで
-- 3〜4往復で要望が把握できたらJSONフォーマットで3案提案する
+- 3?4往復で要望が把握できたらJSONフォーマットで3案提案する
 - ユーザーが「もっと絞りたい」「別の案を」と言ったら追加質問して再提案する
 - 常に日本語で回答する
 - 案を提案するとき必ず以下のマーカー付きJSONを含める
@@ -578,7 +578,7 @@ function setStep(n){
     const el=document.getElementById(id); el.className='step';
     if(i+1<n) el.classList.add('done'); else if(i+1===n) el.classList.add('active');
     const sc=document.getElementById('sc'+(i+1));
-    sc.textContent=i+1<n?'✓':(i+1);
+    sc.textContent=i+1<n?'?':(i+1);
   });
 }
 
@@ -589,7 +589,7 @@ function onDragOver(e){ e.preventDefault(); document.getElementById('drop-zone')
 function onDragLeave(){ document.getElementById('drop-zone').classList.remove('dragover'); }
 function onDrop(e){ e.preventDefault(); onDragLeave(); readFile(e.dataTransfer.files[0]); }
 function onFileChange(e){ readFile(e.target.files[0]); }
-function readFile(f){ if(!f) return; const r=new FileReader(); r.onload=e=>{ fileText=e.target.result; document.getElementById('file-badge-area').innerHTML=`<div class="file-ok">✓ ${f.name} — ${fileText.length.toLocaleString()}文字 読み込み完了</div>`; }; r.readAsText(f,'UTF-8'); }
+function readFile(f){ if(!f) return; const r=new FileReader(); r.onload=e=>{ fileText=e.target.result; document.getElementById('file-badge-area').innerHTML=`<div class="file-ok">? ${f.name} ? ${fileText.length.toLocaleString()}文字 読み込み完了</div>`; }; r.readAsText(f,'UTF-8'); }
 
 async function startInterview(){
   const content=inputMode==='file'?fileText:document.getElementById('idea-text').value.trim();
@@ -618,7 +618,7 @@ async function callAI(){
   document.getElementById('typing-row').style.display='flex';
   document.getElementById('send-btn').disabled=true;
   try{
-    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:1200,system:AI_SYSTEM,messages:history})});
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1200,system:AI_SYSTEM,messages:history})});
     const data=await res.json();
     const full=data.content.map(c=>c.text||'').join('').trim();
     if(full.includes('SYSTEM_IDEAS_JSON:')){
@@ -647,7 +647,7 @@ function renderIdeas(){
       <div class="idea-desc">${esc(idea.description)}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="diff-badge ${dc[idea.difficulty]||'diff-mid'}">${esc(idea.difficulty)}</span>
-        <span style="font-size:12px;color:var(--text-soft)">⏱ ${esc(idea.time)}</span>
+        <span style="font-size:12px;color:var(--text-soft)">? ${esc(idea.time)}</span>
       </div>
       <div class="tags">
         ${idea.services.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}
@@ -680,7 +680,7 @@ async function goToSpec(){
 【ワークフロー名】〇〇ワークフロー
 
 【目的】
-（2〜3文）
+（2?3文）
 
 【トリガー】
 - 種類: webhook / schedule_trigger / manual_trigger
@@ -701,7 +701,7 @@ async function goToSpec(){
 - エラー時の対処方針`;
 
   try{
-    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
     currentSpec=data.content.map(c=>c.text||'').join('').trim();
     document.getElementById('spec-result').innerHTML=`<div class="spec-box">${esc(currentSpec)}</div>`;
@@ -765,8 +765,8 @@ function buildCredUI(){
         <div class="cred-step-status" id="cstatus-${i}" style="color:var(--text-soft)">未入力</div>
       </div>
       <div class="cred-step-body">
-        <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;background:var(--amber-light);border-radius:var(--r-sm);padding:8px 12px">📌 ${def.hint}</div>
-        ${def.link?`<a class="get-link" href="${def.link}" target="_blank">🔗 ${def.linkLabel}</a>`:''}
+        <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;background:var(--amber-light);border-radius:var(--r-sm);padding:8px 12px">?? ${def.hint}</div>
+        ${def.link?`<a class="get-link" href="${def.link}" target="_blank">?? ${def.linkLabel}</a>`:''}
         ${def.fields.map(f=>`
           <div class="cred-field">
             <label>${f.label} <span class="field-hint">${f.hint}</span></label>
@@ -786,8 +786,8 @@ function onCredInput(stepIdx, svc){
   if(allFilled){
     const vals={}; inputs.forEach(el=>vals[el.dataset.key]=el.value.trim());
     credValues[svc]=vals;
-    document.getElementById('cnum-'+stepIdx).className='cred-step-num done'; document.getElementById('cnum-'+stepIdx).textContent='✓';
-    document.getElementById('cstatus-'+stepIdx).textContent='✅ 入力完了'; document.getElementById('cstatus-'+stepIdx).style.color='var(--green)';
+    document.getElementById('cnum-'+stepIdx).className='cred-step-num done'; document.getElementById('cnum-'+stepIdx).textContent='?';
+    document.getElementById('cstatus-'+stepIdx).textContent='? 入力完了'; document.getElementById('cstatus-'+stepIdx).style.color='var(--green)';
     document.getElementById('cstep-'+stepIdx).classList.add('done-card');
   } else {
     delete credValues[svc];
@@ -830,7 +830,7 @@ async function registerCredentials(){
   document.getElementById('save-form').style.display='block';
   if(successCount===needed.length){
     const banner=document.createElement('div'); banner.className='success-banner';
-    banner.innerHTML=`✅ ${successCount}件のCredentialをn8nに登録しました！このシステムはすぐに動作します。`;
+    banner.innerHTML=`? ${successCount}件のCredentialをn8nに登録しました！このシステムはすぐに動作します。`;
     document.getElementById('save-form').before(banner);
     showToast(`${successCount}件のCredentialを登録しました`);
   } else {
@@ -844,7 +844,7 @@ function skipToSave(){ document.getElementById('cred-setup-area').style.display=
 function updateCmd(){ const fn=document.getElementById('save-filename').value.trim()||'workflow.txt'; document.getElementById('cmd-preview-text').textContent=`python main.py specs/${fn}`; }
 function copyCmd(){ const fn=document.getElementById('save-filename').value.trim()||'workflow.txt'; navigator.clipboard.writeText(`cd C:\\Users\\tatsu\\zero_ops_n8n && python main.py specs/${fn}`); showToast('コマンドをコピーしました'); }
 function copySpec(){ if(currentSpec){ navigator.clipboard.writeText(currentSpec); showToast('仕様書をコピーしました'); } }
-function toggleSpecPreview(){ specCollapsed=!specCollapsed; document.getElementById('spec-result').style.display=specCollapsed?'none':'block'; document.getElementById('toggle-spec-btn').textContent=specCollapsed?'▶ 開く':'▼ 折りたたむ'; }
+function toggleSpecPreview(){ specCollapsed=!specCollapsed; document.getElementById('spec-result').style.display=specCollapsed?'none':'block'; document.getElementById('toggle-spec-btn').textContent=specCollapsed?'? 開く':'▼ 折りたたむ'; }
 
 function saveWorkflow(){
   const name=document.getElementById('save-name').value.trim();
@@ -863,7 +863,7 @@ function backToIdeas(){ showPhase('chat'); setStep(3); document.getElementById('
 // ── Library ────────────────────────────────────────────────────
 function renderLibrary(){
   const wfs=loadWFs(); const container=document.getElementById('lib-list');
-  if(wfs.length===0){ container.innerHTML=`<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">📂</div><div style="font-size:14px">まだワークフローがありません<br>「新規生成」から作成してください</div></div>`; return; }
+  if(wfs.length===0){ container.innerHTML=`<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">??</div><div style="font-size:14px">まだワークフローがありません<br>「新規生成」から作成してください</div></div>`; return; }
   container.innerHTML=wfs.map(wf=>`
     <div class="wf-card">
       <div class="wf-card-header">
@@ -871,29 +871,29 @@ function renderLibrary(){
         <div class="wf-card-date">${esc(wf.createdAt)}</div>
       </div>
       <div style="margin-bottom:8px">
-        <span class="wf-connected ${wf.connected?'':'wf-pending'}">${wf.connected?'⚡ 連携済み・すぐ動く':'📁 未連携・要設定'}</span>
+        <span class="wf-connected ${wf.connected?'':'wf-pending'}">${wf.connected?'? 連携済み・すぐ動く':'?? 未連携・要設定'}</span>
         ${wf.connected&&wf.connectedServices?`<span style="font-size:12px;color:var(--text-soft);margin-left:6px">${wf.connectedServices.join(' / ')}</span>`:''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
         <span class="wf-path">specs/${esc(wf.filename)}</span>
         ${wf.idea?`<span class="diff-badge ${'簡単'===wf.idea.difficulty?'diff-easy':'普通'===wf.idea.difficulty?'diff-mid':'diff-hard'}">${esc(wf.idea.difficulty)}</span>`:''}
-        ${wf.idea?`<span style="font-size:12px;color:var(--text-soft)">⏱ ${esc(wf.idea.time)}</span>`:''}
+        ${wf.idea?`<span style="font-size:12px;color:var(--text-soft)">? ${esc(wf.idea.time)}</span>`:''}
       </div>
       <div class="cmd-row">
         <span>cd C:\\Users\\tatsu\\zero_ops_n8n &amp;&amp; ${esc(wf.cmd)}</span>
         <button class="copy-mini" onclick="copyCmdById('${wf.id}')">コピー</button>
       </div>
       <div class="wf-actions">
-        <button class="btn-sm btn-sm-accent" onclick="toggleSpec('${wf.id}')">📄 仕様書</button>
-        <button class="btn-sm btn-sm-ghost" onclick="copySpecById('${wf.id}')">📋 コピー</button>
-        <button class="btn-sm btn-sm-ghost" onclick="downloadSpec('${wf.id}')">⬇ ダウンロード</button>
-        ${!wf.connected?`<button class="btn-sm btn-sm-green" onclick="reconnect('${wf.id}')">🔗 今すぐ連携</button>`:''}
-        <button class="btn-sm btn-sm-danger" onclick="deleteWF('${wf.id}')">🗑 削除</button>
+        <button class="btn-sm btn-sm-accent" onclick="toggleSpec('${wf.id}')">?? 仕様書</button>
+        <button class="btn-sm btn-sm-ghost" onclick="copySpecById('${wf.id}')">?? コピー</button>
+        <button class="btn-sm btn-sm-ghost" onclick="downloadSpec('${wf.id}')">? ダウンロード</button>
+        ${!wf.connected?`<button class="btn-sm btn-sm-green" onclick="reconnect('${wf.id}')">?? 今すぐ連携</button>`:''}
+        <button class="btn-sm btn-sm-danger" onclick="deleteWF('${wf.id}')">?? 削除</button>
       </div>
       <div class="spec-modal" id="spec-modal-${wf.id}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="font-size:13px;font-weight:700;color:var(--text-mid)">仕様書</div>
-          <button onclick="toggleSpec('${wf.id}')" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-soft)">✕</button>
+          <button onclick="toggleSpec('${wf.id}')" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-soft)">?</button>
         </div>
         <div class="spec-box" style="font-size:12px">${esc(wf.spec)}</div>
       </div>
@@ -929,3 +929,5 @@ updateBadge();
 </script>
 </body>
 </html>
+
+
