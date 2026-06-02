@@ -61,17 +61,18 @@
     const data = await response.json();
     const raw = data.content.map(x => x.text || '').join('').trim();
 
-    // Strip markdown code fences if present
     const cleaned = raw
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```\s*$/, '')
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
       .trim();
 
     let workflow;
     try {
       workflow = JSON.parse(cleaned);
-    } catch (parseErr) {
-      return res.status(500).json({ error: 'Invalid JSON from AI', raw: cleaned });
+    } catch (e) {
+      console.error('JSON parse failed. Raw AI response:', raw);
+      return res.status(500).json({ error: 'Invalid JSON from AI', raw: raw });
     }
 
     // Ensure required fields
