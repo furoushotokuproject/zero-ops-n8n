@@ -1,0 +1,931 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero-Ops n8n</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5f3;--white:#fff;--border:#e8e8e4;--border-dark:#d0d0ca;
+  --text:#1a1a1a;--text-mid:#555550;--text-soft:#999990;
+  --accent:#5046e5;--accent-light:#eeecff;--accent-border:#c4bfff;
+  --green:#1a9e6e;--green-light:#e6f7f1;--green-border:#9fe0c8;
+  --amber:#b45309;--amber-light:#fef3c7;
+  --red:#dc2626;--red-light:#fee2e2;
+  --r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;font-size:15px;line-height:1.6}
+.page{max-width:720px;margin:0 auto;padding:36px 24px 100px}
+
+/* Header */
+.site-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.logo{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo span{color:var(--accent)}
+.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-soft);background:var(--white);border:1px solid var(--border);border-radius:99px;padding:4px 12px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Nav */
+.nav-tabs{display:flex;gap:2px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:24px}
+.nav-tab{flex:1;padding:9px 0;text-align:center;font-size:14px;font-weight:500;border-radius:var(--r-sm);cursor:pointer;border:none;background:transparent;color:var(--text-soft);font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.nav-tab.on{background:var(--accent);color:var(--white)}
+.badge{background:rgba(255,255,255,.25);color:var(--white);font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;display:none}
+.nav-tab.on .badge{display:inline}
+
+/* Step bar */
+.step-bar{display:flex;align-items:center;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 20px;margin-bottom:24px}
+.step{display:flex;align-items:center;gap:8px;flex:1}
+.step-circle{width:26px;height:26px;border-radius:50%;border:2px solid var(--border-dark);color:var(--text-soft);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.step.active .step-circle{background:var(--accent);border-color:var(--accent);color:#fff}
+.step.done .step-circle{background:var(--green);border-color:var(--green);color:#fff}
+.step-label{font-size:12px;color:var(--text-soft);font-weight:500}
+.step.active .step-label{color:var(--accent)}
+.step.done .step-label{color:var(--green)}
+.step-sep{flex-shrink:0;margin:0 6px;color:var(--border-dark)}
+
+/* Section */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-soft);margin-bottom:4px}
+.sec-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-.02em}
+.sec-sub{font-size:14px;color:var(--text-mid);margin-bottom:20px}
+
+/* Cards */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;margin-bottom:14px}
+.card-label{font-size:12px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+/* Tabs */
+.tab-row{display:flex;gap:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;width:fit-content;margin-bottom:14px}
+.tab{padding:6px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-soft);font-family:inherit;transition:all .15s}
+.tab.on{background:var(--white);color:var(--text);border:1px solid var(--border-dark)}
+
+/* Form */
+textarea,input[type=text],input[type=password]{width:100%;padding:11px 13px;font-family:inherit;font-size:14px;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);resize:vertical;line-height:1.7;transition:border-color .15s}
+textarea:focus,input[type=text]:focus,input[type=password]:focus{outline:none;border-color:var(--accent);background:var(--white)}
+textarea::placeholder,input::placeholder{color:var(--text-soft)}
+
+/* Upload */
+.upload-zone{border:2px dashed var(--border-dark);border-radius:var(--r);padding:36px 24px;text-align:center;cursor:pointer;transition:all .15s}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-light)}
+.file-ok{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--r-sm);padding:6px 12px;font-size:13px;color:var(--green)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 13px;border-radius:99px;border:1.5px solid var(--border-dark);background:var(--white);font-size:13px;color:var(--text-mid);cursor:pointer;font-family:inherit;transition:all .15s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent-light);border-color:var(--accent-border);color:var(--accent);font-weight:500}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#3d33cc;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--white);color:var(--text-mid);border:1.5px solid var(--border-dark)}
+.btn-ghost:hover{border-color:var(--text-mid);color:var(--text)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{opacity:.85}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+
+/* Chat */
+.chat-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;display:flex;flex-direction:column;gap:14px;min-height:120px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.av.ai{background:var(--accent-light);color:var(--accent);border:1.5px solid var(--accent-border)}
+.av.user{background:var(--green-light);color:var(--green);border:1.5px solid var(--green-border)}
+.bubble{max-width:82%;padding:10px 14px;border-radius:var(--r-sm);font-size:14px;line-height:1.7}
+.bubble.ai{background:var(--white);border:1px solid var(--border);border-radius:4px 12px 12px 12px}
+.bubble.user{background:var(--accent-light);border:1px solid var(--accent-border);border-radius:12px 4px 12px 12px;color:var(--accent)}
+.dots{display:flex;gap:4px;padding:2px 0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text-soft);animation:dp 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,80%,100%{opacity:.3}40%{opacity:1}}
+.reply-row{display:flex;gap:10px;align-items:flex-end}
+.reply-row textarea{flex:1;min-height:62px}
+.send-btn{width:46px;height:46px;border-radius:var(--r-sm);background:var(--accent);color:#fff;border:none;font-size:18px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.send-btn:hover{background:#3d33cc}
+.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.reply-hint{font-size:12px;color:var(--text-soft);margin-top:5px}
+
+/* Idea cards */
+.idea-card{background:var(--white);border:2px solid var(--border);border-radius:var(--r);padding:16px 20px;cursor:pointer;transition:all .15s;margin-bottom:10px;position:relative}
+.idea-card:hover{border-color:var(--accent-border)}
+.idea-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.idea-card.selected::after{content:'✓ 選択中';position:absolute;top:12px;right:14px;font-size:11px;font-weight:700;color:var(--accent);background:#fff;border:1.5px solid var(--accent-border);border-radius:99px;padding:2px 10px}
+.idea-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px;padding-right:80px}
+.idea-desc{font-size:13px;color:var(--text-mid);line-height:1.65;margin-bottom:8px}
+.diff-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px}
+.diff-easy{background:var(--green-light);color:var(--green)}
+.diff-mid{background:var(--amber-light);color:var(--amber)}
+.diff-hard{background:var(--red-light);color:var(--red)}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--text-soft);border:1px solid var(--border)}
+.tag.node{background:var(--accent-light);color:var(--accent);border-color:var(--accent-border)}
+
+/* Spec */
+.spec-box{background:#fafaf8;border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);line-height:1.85;white-space:pre-wrap;word-break:break-all}
+
+/* ── Credential UI ── */
+.cred-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.choice-card{background:var(--white);border:2px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;text-align:center;transition:all .15s}
+.choice-card:hover{border-color:var(--accent-border)}
+.choice-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.choice-icon{font-size:28px;margin-bottom:8px}
+.choice-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.choice-desc{font-size:12px;color:var(--text-mid);line-height:1.5}
+
+/* Credential step */
+.cred-step{background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.cred-step-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.cred-step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cred-step-num.done{background:var(--green)}
+.cred-step-num.pending{background:var(--border-dark);color:var(--text-soft)}
+.cred-step-name{font-size:14px;font-weight:700;color:var(--text)}
+.cred-step-status{margin-left:auto;font-size:12px;font-weight:500}
+.cred-step-body{padding:16px 20px}
+.cred-step.done-card .cred-step-header{background:var(--green-light)}
+.cred-step.done-card .cred-step-name{color:var(--green)}
+
+/* Get-link button */
+.get-link{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;margin-bottom:12px}
+.get-link:hover{background:var(--accent);color:#fff}
+
+/* Field in cred */
+.cred-field{margin-bottom:10px}
+.cred-field label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:5px}
+.field-hint{font-size:11px;color:var(--text-soft);font-weight:400}
+.cred-field input{font-family:'DM Mono',monospace;font-size:13px}
+
+/* Progress bar */
+.progress-wrap{background:var(--border);border-radius:99px;height:6px;margin-bottom:16px;overflow:hidden}
+.progress-bar{height:100%;background:var(--green);border-radius:99px;transition:width .4s}
+
+/* Save form */
+.save-form{background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--r);padding:20px 24px;margin-bottom:14px}
+.save-form-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:5px}
+.cmd-preview{font-family:'DM Mono',monospace;font-size:13px;background:#fff;border:1px solid var(--green-border);border-radius:var(--r-sm);padding:10px 14px;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.copy-mini{background:none;border:1px solid var(--border-dark);border-radius:6px;font-size:12px;cursor:pointer;padding:4px 8px;color:var(--text-mid);font-family:inherit}
+.copy-mini:hover{background:var(--bg)}
+
+/* Library */
+.lib-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.empty-state{text-align:center;padding:60px 24px;color:var(--text-soft)}
+.wf-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:12px}
+.wf-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.wf-card-name{font-size:15px;font-weight:700;color:var(--text)}
+.wf-card-date{font-size:12px;color:var(--text-soft);white-space:nowrap;margin-top:2px}
+.wf-connected{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--green-light);color:var(--green);margin-bottom:8px}
+.wf-pending{background:var(--amber-light);color:var(--amber)}
+.wf-path{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-mid);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px}
+.cmd-row{font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;word-break:break-all}
+.wf-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn-sm{padding:6px 12px;font-size:12px;font-weight:600;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.btn-sm-ghost{background:var(--bg);color:var(--text-mid);border:1px solid var(--border)}
+.btn-sm-ghost:hover{background:var(--border)}
+.btn-sm-accent{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border)}
+.btn-sm-accent:hover{background:var(--accent);color:#fff}
+.btn-sm-green{background:var(--green-light);color:var(--green);border:1px solid var(--green-border)}
+.btn-sm-danger{background:var(--red-light);color:var(--red);border:1px solid #fca5a5}
+.spec-modal{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-top:10px;display:none}
+.spec-modal.open{display:block}
+
+/* Info banner */
+.info-banner{background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:14px}
+.success-banner{background:var(--green-light);border:1px solid var(--green-border);border-radius:var(--r-sm);padding:12px 16px;font-size:14px;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:all .2s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.phase{display:none}
+.phase.active{display:block;animation:fd .2s ease}
+.view{display:none}
+.view.active{display:block;animation:fd .2s ease}
+@keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:480px){.page{padding:20px 14px 80px}.step-label{display:none}.cred-choice{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="site-header">
+  <div class="logo">Zero-Ops <span>n8n</span></div>
+  <div class="status-pill"><div class="status-dot"></div>localhost:5679</div>
+</header>
+
+<div class="nav-tabs">
+  <button class="nav-tab on" onclick="switchView('generate',this)" id="nav-gen">＋ 新規生成</button>
+  <button class="nav-tab" onclick="switchView('library',this)" id="nav-lib">
+    📂 ワークフロー管理 <span class="badge" id="lib-badge">0</span>
+  </button>
+</div>
+
+<!-- ═══ VIEW: GENERATE ═══ -->
+<div class="view active" id="view-generate">
+
+  <div class="step-bar">
+    <div class="step active" id="stp1"><div class="step-circle" id="sc1">1</div><div class="step-label">入力</div></div>
+    <div class="step-sep">›</div>
+    <div class="step" id="stp2"><div class="step-circle" id="sc2">2</div><div class="step-label">質問</div></div>
+    <div class="step-sep">›</div>
+    <div class="step" id="stp3"><div class="step-circle" id="sc3">3</div><div class="step-label">案を選ぶ</div></div>
+    <div class="step-sep">›</div>
+    <div class="step" id="stp4"><div class="step-circle" id="sc4">4</div><div class="step-label">連携・保存</div></div>
+  </div>
+
+  <!-- Phase 1: Input -->
+  <div class="phase active" id="phase-input">
+    <div class="eyebrow">Step 1</div>
+    <div class="sec-title">何を自動化したい？</div>
+    <div class="sec-sub">ざっくりでOK。AIが質問しながら要望を整理します。</div>
+    <div class="card">
+      <div class="tab-row">
+        <button class="tab on" onclick="switchTab('text',this)">テキストで入力</button>
+        <button class="tab" onclick="switchTab('file',this)">ファイルから読み込む</button>
+      </div>
+      <div id="pane-text">
+        <textarea id="idea-text" rows="6" placeholder="例: 毎朝9時にInstagramへ自動投稿したい&#10;例: LINEで問い合わせが来たら自動返信して予約を取りたい&#10;例: Googleスプレッドシートの新しい行をSlackに通知したい"></textarea>
+      </div>
+      <div id="pane-file" style="display:none">
+        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-in').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <div style="font-size:26px;margin-bottom:8px;color:var(--text-soft)">↑</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text-mid);margin-bottom:4px">クリック、またはファイルをドラッグ＆ドロップ</div>
+          <div style="font-size:12px;color:var(--text-soft)">txt / md 対応（UTF-8）</div>
+        </div>
+        <input type="file" id="file-in" style="display:none" accept=".txt,.md" onchange="onFileChange(event)">
+        <div id="file-badge-area"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">使いたいサービス（複数OK・任意）</div>
+      <div class="chips">
+        <div class="chip" onclick="toggleChip(this)">LINE</div>
+        <div class="chip" onclick="toggleChip(this)">Airtable</div>
+        <div class="chip" onclick="toggleChip(this)">Stripe</div>
+        <div class="chip" onclick="toggleChip(this)">Slack</div>
+        <div class="chip" onclick="toggleChip(this)">Gmail</div>
+        <div class="chip" onclick="toggleChip(this)">Google Sheets</div>
+        <div class="chip" onclick="toggleChip(this)">Notion</div>
+        <div class="chip" onclick="toggleChip(this)">Claude / GPT API</div>
+        <div class="chip" onclick="toggleChip(this)">X (Twitter)</div>
+        <div class="chip" onclick="toggleChip(this)">Instagram</div>
+        <div class="chip" onclick="toggleChip(this)">WordPress</div>
+        <div class="chip" onclick="toggleChip(this)">こだわらない</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="startInterview()" style="width:100%;justify-content:center;font-size:15px;padding:14px">AIと対話を始める　→</button>
+  </div>
+
+  <!-- Phase 2: Chat -->
+  <div class="phase" id="phase-chat">
+    <div class="eyebrow">Step 2</div>
+    <div class="sec-title">AIが質問します</div>
+    <div class="sec-sub">答えていくと自動でシステム案が提示されます。</div>
+    <div class="info-banner">💡「もっと絞りたい」「別の案を出して」と入力するとやり直せます</div>
+    <div class="chat-wrap" id="chat-log"></div>
+    <div class="msg ai" id="typing-row" style="display:none">
+      <div class="av ai">AI</div>
+      <div class="bubble ai"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    </div>
+    <div class="reply-row" style="margin-bottom:6px">
+      <textarea id="user-reply" rows="2" placeholder="返答を入力…（Enter で送信、Shift+Enter で改行）" onkeydown="onKey(event)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendReply()">→</button>
+    </div>
+    <div class="reply-hint">Enter で送信　／　Shift+Enter で改行</div>
+
+    <div id="ideas-section" style="display:none;margin-top:24px">
+      <div class="divider"></div>
+      <div class="eyebrow">Step 3</div>
+      <div class="sec-title" style="font-size:18px">気に入った案を選んでください</div>
+      <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">タップして選択 → 仕様書生成・連携設定へ進めます</div>
+      <div id="ideas-list"></div>
+      <div class="action-row">
+        <button class="btn btn-primary" id="spec-btn" onclick="goToSpec()" disabled>選んだ案で進む　→</button>
+        <button class="btn btn-ghost" onclick="continueChat()">もっと条件を絞る</button>
+        <button class="btn btn-ghost" onclick="regenIdeas()">別の案を出す</button>
+      </div>
+    </div>
+    <div class="divider" style="margin-top:24px"></div>
+    <button class="btn btn-ghost" onclick="resetAll()" style="font-size:13px;padding:8px 14px">← 最初からやり直す</button>
+  </div>
+
+  <!-- Phase 3: Spec + Credential choice + Save -->
+  <div class="phase" id="phase-spec">
+    <div class="eyebrow">Step 4</div>
+    <div class="sec-title">連携・保存</div>
+    <div class="sec-sub">今すぐ連携して実際に動く状態で保存するか、後で連携するか選べます。</div>
+
+    <div id="spec-loading" style="display:none;padding:24px 0;text-align:center;color:var(--text-soft)">
+      <div class="dots" style="justify-content:center;margin-bottom:8px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      仕様書を生成中...
+    </div>
+
+    <!-- 選択肢 -->
+    <div id="cred-choice-area" style="display:none">
+      <div class="card-label" style="margin-bottom:12px">連携方法を選んでください</div>
+      <div class="cred-choice">
+        <div class="choice-card" onclick="selectCredChoice('now',this)">
+          <div class="choice-icon">⚡</div>
+          <div class="choice-title">今すぐ連携する</div>
+          <div class="choice-desc">必要なAPIキーを<br>1つずつ案内します。<br>完了後すぐ動きます。</div>
+        </div>
+        <div class="choice-card" onclick="selectCredChoice('later',this)">
+          <div class="choice-icon">📁</div>
+          <div class="choice-title">後で連携する</div>
+          <div class="choice-desc">仕様書だけ保存します。<br>連携は後からでもOK。</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="cred-choice-btn" onclick="proceedFromChoice()" disabled style="width:100%;justify-content:center;font-size:15px;padding:14px">次へ　→</button>
+    </div>
+
+    <!-- Credential入力UI -->
+    <div id="cred-setup-area" style="display:none">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">🔑 APIキー・Credential を設定</div>
+      <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px">各サービスのリンクを開いてAPIキーをコピーし、下の欄に貼り付けてください。</div>
+      <div class="progress-wrap"><div class="progress-bar" id="cred-progress" style="width:0%"></div></div>
+      <div id="cred-steps-list"></div>
+      <div class="action-row" style="margin-top:16px">
+        <button class="btn btn-green" id="register-btn" onclick="registerCredentials()">🔗 n8nに登録して保存する</button>
+        <button class="btn btn-ghost" onclick="skipToSave()">連携をスキップして保存</button>
+      </div>
+    </div>
+
+    <!-- 保存フォーム -->
+    <div class="save-form" id="save-form" style="display:none">
+      <div class="save-form-title">💾 保存設定</div>
+      <div class="field"><label>ワークフロー名</label><input type="text" id="save-name" placeholder="例: LINE予約受付ワークフロー"></div>
+      <div class="field"><label>specs/ フォルダ内のファイル名</label><input type="text" id="save-filename" placeholder="例: line_booking.txt" oninput="updateCmd()"></div>
+      <div class="field"><label>実行コマンド（自動生成）</label>
+        <div class="cmd-preview"><span id="cmd-preview-text" style="flex:1;word-break:break-all">python main.py specs/workflow.txt</span><button class="copy-mini" onclick="copyCmd()">コピー</button></div>
+      </div>
+      <div class="field"><label>メモ（任意）</label><textarea id="save-memo" rows="2" placeholder="このワークフローについてメモ..."></textarea></div>
+      <div class="action-row" style="margin-top:4px">
+        <button class="btn btn-green" onclick="saveWorkflow()">💾 保存する</button>
+        <button class="btn btn-ghost" onclick="backToIdeas()">← 案を選び直す</button>
+      </div>
+    </div>
+
+    <!-- 仕様書プレビュー -->
+    <div class="card" id="spec-card" style="display:none;margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="card-label">生成された仕様書</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-sm-ghost" onclick="copySpec()">📋 コピー</button>
+          <button class="btn-sm btn-sm-ghost" onclick="toggleSpecPreview()" id="toggle-spec-btn">▼ 折りたたむ</button>
+        </div>
+      </div>
+      <div id="spec-result"></div>
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-ghost" onclick="resetAll()" style="font-size:13px;padding:8px 14px">← 最初からやり直す</button>
+  </div>
+
+</div><!-- /view-generate -->
+
+<!-- ═══ VIEW: LIBRARY ═══ -->
+<div class="view" id="view-library">
+  <div class="lib-header">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:var(--text)">ワークフロー管理</div>
+      <div style="font-size:13px;color:var(--text-soft)" id="lib-count-text">0 件保存済み</div>
+    </div>
+    <button class="btn btn-primary" onclick="switchView('generate',document.getElementById('nav-gen'))" style="font-size:13px;padding:9px 16px">＋ 新規生成</button>
+  </div>
+  <div id="lib-list"></div>
+</div>
+
+</div><!-- /page -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────
+const API_URL = 'https://api.anthropic.com/v1/messages';
+const MODEL = 'claude-haiku-4-5-20251001';
+const N8N = 'http://localhost:5679';
+const LS_KEY = 'zero_ops_n8n_v4';
+
+// Credential definitions per service
+const CRED_DEFS = {
+  'LINE': {
+    label: 'LINE Messaging API',
+    n8nType: 'lineNotifyApi',
+    link: 'https://developers.line.biz/console/',
+    linkLabel: 'LINE Developersコンソールを開く',
+    hint: 'プロバイダー → チャネル → 「チャネルアクセストークン」タブから発行',
+    fields: [
+      { key: 'channelAccessToken', label: 'チャネルアクセストークン', hint: '「発行」ボタンで取得', type: 'password' },
+      { key: 'channelSecret', label: 'チャネルシークレット', hint: '「基本設定」タブに記載', type: 'password' },
+    ]
+  },
+  'Airtable': {
+    label: 'Airtable',
+    n8nType: 'airtableTokenApi',
+    link: 'https://airtable.com/create/tokens',
+    linkLabel: 'Airtable APIトークンページを開く',
+    hint: '「Create token」→ スコープに data.records:read と data.records:write を追加',
+    fields: [
+      { key: 'token', label: 'Personal Access Token', hint: 'pat... で始まるトークン', type: 'password' },
+    ]
+  },
+  'Stripe': {
+    label: 'Stripe',
+    n8nType: 'stripeApi',
+    link: 'https://dashboard.stripe.com/apikeys',
+    linkLabel: 'Stripe APIキーページを開く',
+    hint: '「シークレットキー」をコピー（sk_live_... または sk_test_...）',
+    fields: [
+      { key: 'secretKey', label: 'シークレットキー', hint: 'sk_live_... または sk_test_...', type: 'password' },
+    ]
+  },
+  'Slack': {
+    label: 'Slack',
+    n8nType: 'slackApi',
+    link: 'https://api.slack.com/apps',
+    linkLabel: 'Slack Appsページを開く',
+    hint: 'アプリ作成 → OAuth & Permissions → Bot Token Scopes に chat:write を追加 → Install App',
+    fields: [
+      { key: 'accessToken', label: 'Bot User OAuth Token', hint: 'xoxb- で始まるトークン', type: 'password' },
+    ]
+  },
+  'Gmail': {
+    label: 'Gmail / Google',
+    n8nType: 'googleOAuth2Api',
+    link: 'https://console.cloud.google.com/apis/credentials',
+    linkLabel: 'Google Cloud Credentialsを開く',
+    hint: '「認証情報を作成」→「OAuthクライアントID」→「ウェブアプリケーション」',
+    fields: [
+      { key: 'clientId', label: 'クライアントID', hint: '*.apps.googleusercontent.com', type: 'text' },
+      { key: 'clientSecret', label: 'クライアントシークレット', hint: 'GOCSPX- で始まる文字列', type: 'password' },
+    ]
+  },
+  'Google Sheets': {
+    label: 'Google Sheets',
+    n8nType: 'googleSheetsOAuth2Api',
+    link: 'https://console.cloud.google.com/apis/credentials',
+    linkLabel: 'Google Cloud Credentialsを開く',
+    hint: 'GmailのOAuth情報と同じものを使用できます',
+    fields: [
+      { key: 'clientId', label: 'クライアントID', hint: '*.apps.googleusercontent.com', type: 'text' },
+      { key: 'clientSecret', label: 'クライアントシークレット', hint: 'GOCSPX- で始まる文字列', type: 'password' },
+    ]
+  },
+  'Notion': {
+    label: 'Notion',
+    n8nType: 'notionApi',
+    link: 'https://www.notion.so/my-integrations',
+    linkLabel: 'Notion Integrationsページを開く',
+    hint: '「New integration」→ 作成後に「Internal Integration Token」をコピー',
+    fields: [
+      { key: 'apiKey', label: 'Internal Integration Token', hint: 'secret_... で始まるトークン', type: 'password' },
+    ]
+  },
+  'Claude / GPT API': {
+    label: 'Anthropic / OpenAI API',
+    n8nType: 'anthropicApi',
+    link: 'https://console.anthropic.com/settings/keys',
+    linkLabel: 'Anthropic APIキーページを開く',
+    hint: '「Create Key」でAPIキーを発行',
+    fields: [
+      { key: 'apiKey', label: 'APIキー', hint: 'sk-ant-... で始まるキー', type: 'password' },
+    ]
+  },
+  'X (Twitter)': {
+    label: 'X (Twitter) API',
+    n8nType: 'twitterOAuth1Api',
+    link: 'https://developer.twitter.com/en/portal/dashboard',
+    linkLabel: 'X Developer Portalを開く',
+    hint: 'プロジェクト → App → 「Keys and tokens」タブから取得',
+    fields: [
+      { key: 'consumerKey', label: 'API Key (Consumer Key)', hint: '', type: 'password' },
+      { key: 'consumerSecret', label: 'API Key Secret', hint: '', type: 'password' },
+      { key: 'accessToken', label: 'Access Token', hint: '', type: 'password' },
+      { key: 'accessTokenSecret', label: 'Access Token Secret', hint: '', type: 'password' },
+    ]
+  },
+  'Instagram': {
+    label: 'Instagram / Meta',
+    n8nType: 'instagramApi',
+    link: 'https://developers.facebook.com/apps/',
+    linkLabel: 'Meta for Developersを開く',
+    hint: 'アプリ作成 → Instagram Basic Display → Access Token を発行',
+    fields: [
+      { key: 'accessToken', label: 'Access Token', hint: '', type: 'password' },
+    ]
+  },
+  'WordPress': {
+    label: 'WordPress',
+    n8nType: 'wordpressApi',
+    link: '',
+    linkLabel: '',
+    hint: 'WordPress管理画面 → ユーザー → プロフィール → アプリケーションパスワードを追加',
+    fields: [
+      { key: 'url', label: 'WordPressサイトURL', hint: 'https://yoursite.com', type: 'text' },
+      { key: 'username', label: 'ユーザー名', hint: '', type: 'text' },
+      { key: 'applicationPassword', label: 'アプリケーションパスワード', hint: 'スペース区切りの文字列', type: 'password' },
+    ]
+  },
+};
+
+const AI_SYSTEM = `あなたはn8n自動化の設計専門家です。ユーザーの要望をヒアリングして最適なシステム案を提案します。
+ルール:
+- 1回の返答で質問は最大2個まで
+- 3〜4往復で要望が把握できたらJSONフォーマットで3案提案する
+- ユーザーが「もっと絞りたい」「別の案を」と言ったら追加質問して再提案する
+- 常に日本語で回答する
+- 案を提案するとき必ず以下のマーカー付きJSONを含める
+
+SYSTEM_IDEAS_JSON:
+[{"title":"","description":"","nodes":[],"services":[],"difficulty":"簡単|普通|難しい","time":""}]
+:END_JSON`;
+
+// ── State ──────────────────────────────────────────────────────
+let inputMode='text', fileText='', history=[], ideas=[], selectedIdx=null;
+let currentSpec='', currentIdea=null, credChoice=null, credValues={};
+let specCollapsed=false;
+
+// ── Storage ────────────────────────────────────────────────────
+function loadWFs(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } }
+function saveWFs(wfs){ localStorage.setItem(LS_KEY, JSON.stringify(wfs)); updateBadge(); }
+function updateBadge(){
+  const n = loadWFs().length;
+  document.getElementById('lib-badge').textContent = n;
+  document.getElementById('lib-count-text').textContent = `${n} 件保存済み`;
+}
+
+// ── View / Phase ───────────────────────────────────────────────
+function switchView(name, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('view-'+name).classList.add('active');
+  el.classList.add('on');
+  if(name==='library') renderLibrary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showPhase(name){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase-'+name).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setStep(n){
+  ['stp1','stp2','stp3','stp4'].forEach((id,i)=>{
+    const el=document.getElementById(id); el.className='step';
+    if(i+1<n) el.classList.add('done'); else if(i+1===n) el.classList.add('active');
+    const sc=document.getElementById('sc'+(i+1));
+    sc.textContent=i+1<n?'✓':(i+1);
+  });
+}
+
+// ── Input ──────────────────────────────────────────────────────
+function switchTab(t,el){ inputMode=t; document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on')); el.classList.add('on'); document.getElementById('pane-text').style.display=t==='text'?'block':'none'; document.getElementById('pane-file').style.display=t==='file'?'block':'none'; }
+function toggleChip(el){ el.classList.toggle('on'); }
+function onDragOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('dragover'); }
+function onDragLeave(){ document.getElementById('drop-zone').classList.remove('dragover'); }
+function onDrop(e){ e.preventDefault(); onDragLeave(); readFile(e.dataTransfer.files[0]); }
+function onFileChange(e){ readFile(e.target.files[0]); }
+function readFile(f){ if(!f) return; const r=new FileReader(); r.onload=e=>{ fileText=e.target.result; document.getElementById('file-badge-area').innerHTML=`<div class="file-ok">✓ ${f.name} — ${fileText.length.toLocaleString()}文字 読み込み完了</div>`; }; r.readAsText(f,'UTF-8'); }
+
+async function startInterview(){
+  const content=inputMode==='file'?fileText:document.getElementById('idea-text').value.trim();
+  if(!content){ showToast('要望を入力してください'); return; }
+  const svc=[...document.querySelectorAll('.chip.on')].map(c=>c.textContent).join('、')||'なし';
+  history=[]; ideas=[]; selectedIdx=null; currentSpec=''; currentIdea=null;
+  document.getElementById('chat-log').innerHTML='';
+  document.getElementById('ideas-section').style.display='none';
+  showPhase('chat');
+  const userMsg=inputMode==='file'?`以下のファイル内容が要望です（希望サービス: ${svc}）:\n\n${content}`:`${content}\n\n使いたいサービス: ${svc}`;
+  history.push({role:'user',content:userMsg});
+  addBubble('user',inputMode==='file'?`ファイルから読み込みました（${content.length}文字）\n希望サービス: ${svc}`:`${content}\n希望サービス: ${svc}`);
+  await callAI();
+}
+
+// ── Chat ───────────────────────────────────────────────────────
+function addBubble(role,text){
+  const log=document.getElementById('chat-log');
+  const d=document.createElement('div'); d.className=`msg ${role}`;
+  d.innerHTML=`<div class="av ${role}">${role==='ai'?'AI':'自分'}</div><div class="bubble ${role}">${esc(text)}</div>`;
+  log.appendChild(d); log.scrollTop=log.scrollHeight;
+}
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+async function callAI(){
+  document.getElementById('typing-row').style.display='flex';
+  document.getElementById('send-btn').disabled=true;
+  try{
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:1200,system:AI_SYSTEM,messages:history})});
+    const data=await res.json();
+    const full=data.content.map(c=>c.text||'').join('').trim();
+    if(full.includes('SYSTEM_IDEAS_JSON:')){
+      const match=full.match(/SYSTEM_IDEAS_JSON:\s*([\s\S]*?)\s*:END_JSON/);
+      const pre=full.split('SYSTEM_IDEAS_JSON:')[0].trim();
+      if(pre) addBubble('ai',pre);
+      history.push({role:'assistant',content:full});
+      if(match){ try{ ideas=JSON.parse(match[1].trim()); renderIdeas(); }catch(e){ addBubble('ai',full); } }
+    } else { addBubble('ai',full); history.push({role:'assistant',content:full}); }
+  }catch(e){ addBubble('ai','エラーが発生しました。再試行してください。'); }
+  document.getElementById('typing-row').style.display='none';
+  document.getElementById('send-btn').disabled=false;
+}
+async function sendReply(){ const v=document.getElementById('user-reply').value.trim(); if(!v) return; document.getElementById('user-reply').value=''; history.push({role:'user',content:v}); addBubble('user',v); await callAI(); }
+function onKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendReply(); } }
+
+// ── Ideas ──────────────────────────────────────────────────────
+function renderIdeas(){
+  setStep(3);
+  const sec=document.getElementById('ideas-section'); sec.style.display='block'; selectedIdx=null;
+  document.getElementById('spec-btn').disabled=true;
+  const dc={'簡単':'diff-easy','普通':'diff-mid','難しい':'diff-hard'};
+  document.getElementById('ideas-list').innerHTML=ideas.map((idea,i)=>`
+    <div class="idea-card" onclick="selectIdea(${i},this)">
+      <div class="idea-name">${esc(idea.title)}</div>
+      <div class="idea-desc">${esc(idea.description)}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span class="diff-badge ${dc[idea.difficulty]||'diff-mid'}">${esc(idea.difficulty)}</span>
+        <span style="font-size:12px;color:var(--text-soft)">⏱ ${esc(idea.time)}</span>
+      </div>
+      <div class="tags">
+        ${idea.services.map(s=>`<span class="tag">${esc(s)}</span>`).join('')}
+        ${idea.nodes.map(n=>`<span class="tag node">${esc(n)}</span>`).join('')}
+      </div>
+    </div>`).join('');
+  sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function selectIdea(i,el){ document.querySelectorAll('.idea-card').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); selectedIdx=i; document.getElementById('spec-btn').disabled=false; }
+function continueChat(){ document.getElementById('ideas-section').style.display='none'; const m='わかりました。どんな点が気になりましたか？'; addBubble('ai',m); history.push({role:'assistant',content:m}); setStep(2); }
+async function regenIdeas(){ const m='先ほどとは異なるアプローチで別のシステム案を3つ提案してください。'; history.push({role:'user',content:m}); addBubble('user','別の案を3つ出してください。'); document.getElementById('ideas-section').style.display='none'; await callAI(); }
+
+// ── Spec generation ────────────────────────────────────────────
+async function goToSpec(){
+  if(selectedIdx===null){ showToast('案を選んでください'); return; }
+  currentIdea=ideas[selectedIdx];
+  showPhase('spec'); setStep(4);
+  document.getElementById('spec-loading').style.display='block';
+  document.getElementById('cred-choice-area').style.display='none';
+  document.getElementById('cred-setup-area').style.display='none';
+  document.getElementById('save-form').style.display='none';
+  document.getElementById('spec-card').style.display='none';
+
+  const ctx=history.filter(m=>m.role==='user').map(m=>m.content).join('\n');
+  const prompt=`以下のシステム案をZero-Ops n8n用仕様書テキストに変換してください。
+ユーザー要望コンテキスト:\n${ctx}\n\n選ばれたシステム案:\n${JSON.stringify(currentIdea,null,2)}
+
+以下のフォーマットのみで出力。余分なテキスト不要。
+
+【ワークフロー名】〇〇ワークフロー
+
+【目的】
+（2〜3文）
+
+【トリガー】
+- 種類: webhook / schedule_trigger / manual_trigger
+- （webhookの場合）HTTPメソッド: POST
+- （webhookの場合）パス名: /xxx
+- （scheduleの場合）実行間隔: xxx
+- タイムゾーン: Asia/Tokyo
+
+【処理フロー】
+1. ステップ1
+2. ステップ2
+3. ステップ3
+
+【使用する外部API・Credential】
+- サービス名: credential_key名
+
+【エラーハンドリング】
+- エラー時の対処方針`;
+
+  try{
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:MODEL,max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    currentSpec=data.content.map(c=>c.text||'').join('').trim();
+    document.getElementById('spec-result').innerHTML=`<div class="spec-box">${esc(currentSpec)}</div>`;
+    document.getElementById('spec-card').style.display='block';
+
+    // Prefill save form
+    document.getElementById('save-name').value=currentIdea.title||'';
+    const slug=(currentIdea.title||'workflow').toLowerCase().replace(/[^\w]+/g,'_').slice(0,30);
+    document.getElementById('save-filename').value=slug+'.txt';
+    updateCmd();
+
+    document.getElementById('cred-choice-area').style.display='block';
+  }catch(e){
+    document.getElementById('spec-result').innerHTML=`<div style="color:var(--red);font-size:13px">エラーが発生しました。</div>`;
+    document.getElementById('spec-card').style.display='block';
+    document.getElementById('save-form').style.display='block';
+  }
+  document.getElementById('spec-loading').style.display='none';
+}
+
+// ── Credential choice ─────────────────────────────────────────
+function selectCredChoice(val, el){
+  credChoice=val;
+  document.querySelectorAll('.choice-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('cred-choice-btn').disabled=false;
+}
+
+function proceedFromChoice(){
+  if(credChoice==='later'){ document.getElementById('cred-choice-area').style.display='none'; document.getElementById('save-form').style.display='block'; }
+  else { buildCredUI(); }
+}
+
+function buildCredUI(){
+  // Detect which services are needed from currentIdea + spec
+  const needed=[];
+  const allServices=Object.keys(CRED_DEFS);
+  const searchText=(currentSpec+(currentIdea?JSON.stringify(currentIdea):'')).toLowerCase();
+  allServices.forEach(svc=>{
+    if(searchText.includes(svc.toLowerCase())){ needed.push(svc); }
+  });
+  // Also check from selected chips
+  document.querySelectorAll('.chip.on').forEach(c=>{ if(CRED_DEFS[c.textContent]&&!needed.includes(c.textContent)) needed.push(c.textContent); });
+
+  if(needed.length===0){ showToast('連携が必要なサービスが見つかりませんでした'); document.getElementById('cred-choice-area').style.display='none'; document.getElementById('save-form').style.display='block'; return; }
+
+  document.getElementById('cred-choice-area').style.display='none';
+  document.getElementById('cred-setup-area').style.display='block';
+  credValues={};
+  updateProgress(0,needed.length);
+
+  document.getElementById('cred-steps-list').innerHTML=needed.map((svc,i)=>{
+    const def=CRED_DEFS[svc];
+    return `<div class="cred-step" id="cstep-${i}">
+      <div class="cred-step-header">
+        <div class="cred-step-num pending" id="cnum-${i}">${i+1}</div>
+        <div>
+          <div class="cred-step-name">${def.label}</div>
+          <div style="font-size:12px;color:var(--text-soft)">${svc}</div>
+        </div>
+        <div class="cred-step-status" id="cstatus-${i}" style="color:var(--text-soft)">未入力</div>
+      </div>
+      <div class="cred-step-body">
+        <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;background:var(--amber-light);border-radius:var(--r-sm);padding:8px 12px">📌 ${def.hint}</div>
+        ${def.link?`<a class="get-link" href="${def.link}" target="_blank">🔗 ${def.linkLabel}</a>`:''}
+        ${def.fields.map(f=>`
+          <div class="cred-field">
+            <label>${f.label} <span class="field-hint">${f.hint}</span></label>
+            <input type="${f.type}" placeholder="${f.label}を貼り付け" data-svc="${svc}" data-key="${f.key}" oninput="onCredInput(${i},'${svc}')">
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  window._credNeeded=needed;
+}
+
+function onCredInput(stepIdx, svc){
+  const def=CRED_DEFS[svc];
+  const inputs=[...document.querySelectorAll(`[data-svc="${svc}"]`)];
+  const allFilled=inputs.every(el=>el.value.trim());
+  if(allFilled){
+    const vals={}; inputs.forEach(el=>vals[el.dataset.key]=el.value.trim());
+    credValues[svc]=vals;
+    document.getElementById('cnum-'+stepIdx).className='cred-step-num done'; document.getElementById('cnum-'+stepIdx).textContent='✓';
+    document.getElementById('cstatus-'+stepIdx).textContent='✅ 入力完了'; document.getElementById('cstatus-'+stepIdx).style.color='var(--green)';
+    document.getElementById('cstep-'+stepIdx).classList.add('done-card');
+  } else {
+    delete credValues[svc];
+    document.getElementById('cnum-'+stepIdx).className='cred-step-num'; document.getElementById('cnum-'+stepIdx).textContent=stepIdx+1;
+    document.getElementById('cstatus-'+stepIdx).textContent='未入力'; document.getElementById('cstatus-'+stepIdx).style.color='var(--text-soft)';
+    document.getElementById('cstep-'+stepIdx).classList.remove('done-card');
+  }
+  const needed=window._credNeeded||[];
+  updateProgress(Object.keys(credValues).length,needed.length);
+}
+
+function updateProgress(done,total){
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('cred-progress').style.width=pct+'%';
+}
+
+async function registerCredentials(){
+  const needed=window._credNeeded||[];
+  const missing=needed.filter(s=>!credValues[s]);
+  if(missing.length>0){ showToast(`未入力のサービスがあります: ${missing.join(', ')}`); return; }
+
+  document.getElementById('register-btn').disabled=true;
+  document.getElementById('register-btn').textContent='登録中...';
+  let successCount=0;
+
+  for(const svc of needed){
+    const def=CRED_DEFS[svc];
+    const vals=credValues[svc];
+    try{
+      const res=await fetch(`${N8N}/api/v1/credentials`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({name:`${svc} (Zero-Ops)`,type:def.n8nType,data:vals})
+      });
+      if(res.ok) successCount++;
+    }catch(e){ console.error('Credential登録エラー',svc,e); }
+  }
+
+  document.getElementById('cred-setup-area').style.display='none';
+  document.getElementById('save-form').style.display='block';
+  if(successCount===needed.length){
+    const banner=document.createElement('div'); banner.className='success-banner';
+    banner.innerHTML=`✅ ${successCount}件のCredentialをn8nに登録しました！このシステムはすぐに動作します。`;
+    document.getElementById('save-form').before(banner);
+    showToast(`${successCount}件のCredentialを登録しました`);
+  } else {
+    showToast(`${successCount}/${needed.length}件登録完了（一部失敗）`);
+  }
+}
+
+function skipToSave(){ document.getElementById('cred-setup-area').style.display='none'; document.getElementById('save-form').style.display='block'; }
+
+// ── Save ───────────────────────────────────────────────────────
+function updateCmd(){ const fn=document.getElementById('save-filename').value.trim()||'workflow.txt'; document.getElementById('cmd-preview-text').textContent=`python main.py specs/${fn}`; }
+function copyCmd(){ const fn=document.getElementById('save-filename').value.trim()||'workflow.txt'; navigator.clipboard.writeText(`cd C:\\Users\\tatsu\\zero_ops_n8n && python main.py specs/${fn}`); showToast('コマンドをコピーしました'); }
+function copySpec(){ if(currentSpec){ navigator.clipboard.writeText(currentSpec); showToast('仕様書をコピーしました'); } }
+function toggleSpecPreview(){ specCollapsed=!specCollapsed; document.getElementById('spec-result').style.display=specCollapsed?'none':'block'; document.getElementById('toggle-spec-btn').textContent=specCollapsed?'▶ 開く':'▼ 折りたたむ'; }
+
+function saveWorkflow(){
+  const name=document.getElementById('save-name').value.trim();
+  const filename=document.getElementById('save-filename').value.trim();
+  if(!name){ showToast('ワークフロー名を入力してください'); return; }
+  if(!filename){ showToast('ファイル名を入力してください'); return; }
+  const connected=Object.keys(credValues).length>0;
+  const wf={id:Date.now().toString(),name,filename,spec:currentSpec,memo:document.getElementById('save-memo').value.trim(),cmd:`python main.py specs/${filename}`,createdAt:new Date().toLocaleString('ja-JP'),idea:currentIdea,connected,connectedServices:Object.keys(credValues)};
+  const wfs=loadWFs(); wfs.unshift(wf); saveWFs(wfs);
+  showToast(`「${name}」を保存しました！`);
+  setTimeout(()=>switchView('library',document.getElementById('nav-lib')),800);
+}
+
+function backToIdeas(){ showPhase('chat'); setStep(3); document.getElementById('ideas-section').style.display='block'; }
+
+// ── Library ────────────────────────────────────────────────────
+function renderLibrary(){
+  const wfs=loadWFs(); const container=document.getElementById('lib-list');
+  if(wfs.length===0){ container.innerHTML=`<div class="empty-state"><div style="font-size:36px;margin-bottom:12px">📂</div><div style="font-size:14px">まだワークフローがありません<br>「新規生成」から作成してください</div></div>`; return; }
+  container.innerHTML=wfs.map(wf=>`
+    <div class="wf-card">
+      <div class="wf-card-header">
+        <div><div class="wf-card-name">${esc(wf.name)}</div>${wf.memo?`<div style="font-size:13px;color:var(--text-mid);margin-top:2px">${esc(wf.memo)}</div>`:''}</div>
+        <div class="wf-card-date">${esc(wf.createdAt)}</div>
+      </div>
+      <div style="margin-bottom:8px">
+        <span class="wf-connected ${wf.connected?'':'wf-pending'}">${wf.connected?'⚡ 連携済み・すぐ動く':'📁 未連携・要設定'}</span>
+        ${wf.connected&&wf.connectedServices?`<span style="font-size:12px;color:var(--text-soft);margin-left:6px">${wf.connectedServices.join(' / ')}</span>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <span class="wf-path">specs/${esc(wf.filename)}</span>
+        ${wf.idea?`<span class="diff-badge ${'簡単'===wf.idea.difficulty?'diff-easy':'普通'===wf.idea.difficulty?'diff-mid':'diff-hard'}">${esc(wf.idea.difficulty)}</span>`:''}
+        ${wf.idea?`<span style="font-size:12px;color:var(--text-soft)">⏱ ${esc(wf.idea.time)}</span>`:''}
+      </div>
+      <div class="cmd-row">
+        <span>cd C:\\Users\\tatsu\\zero_ops_n8n &amp;&amp; ${esc(wf.cmd)}</span>
+        <button class="copy-mini" onclick="copyCmdById('${wf.id}')">コピー</button>
+      </div>
+      <div class="wf-actions">
+        <button class="btn-sm btn-sm-accent" onclick="toggleSpec('${wf.id}')">📄 仕様書</button>
+        <button class="btn-sm btn-sm-ghost" onclick="copySpecById('${wf.id}')">📋 コピー</button>
+        <button class="btn-sm btn-sm-ghost" onclick="downloadSpec('${wf.id}')">⬇ ダウンロード</button>
+        ${!wf.connected?`<button class="btn-sm btn-sm-green" onclick="reconnect('${wf.id}')">🔗 今すぐ連携</button>`:''}
+        <button class="btn-sm btn-sm-danger" onclick="deleteWF('${wf.id}')">🗑 削除</button>
+      </div>
+      <div class="spec-modal" id="spec-modal-${wf.id}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--text-mid)">仕様書</div>
+          <button onclick="toggleSpec('${wf.id}')" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-soft)">✕</button>
+        </div>
+        <div class="spec-box" style="font-size:12px">${esc(wf.spec)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleSpec(id){ document.getElementById(`spec-modal-${id}`).classList.toggle('open'); }
+function copyCmdById(id){ const wf=loadWFs().find(w=>w.id===id); if(wf){ navigator.clipboard.writeText(`cd C:\\Users\\tatsu\\zero_ops_n8n && ${wf.cmd}`); showToast('コマンドをコピーしました'); } }
+function copySpecById(id){ const wf=loadWFs().find(w=>w.id===id); if(wf){ navigator.clipboard.writeText(wf.spec); showToast('仕様書をコピーしました'); } }
+function downloadSpec(id){ const wf=loadWFs().find(w=>w.id===id); if(!wf) return; const blob=new Blob([wf.spec],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=wf.filename; a.click(); showToast(`${wf.filename} をダウンロードしました`); }
+function deleteWF(id){ if(!confirm('このワークフローを削除しますか？')) return; saveWFs(loadWFs().filter(w=>w.id!==id)); renderLibrary(); showToast('削除しました'); }
+function reconnect(id){
+  const wf=loadWFs().find(w=>w.id===id);
+  if(!wf) return;
+  currentSpec=wf.spec; currentIdea=wf.idea; credValues={};
+  switchView('generate',document.getElementById('nav-gen'));
+  showPhase('spec'); setStep(4);
+  document.getElementById('spec-loading').style.display='none';
+  document.getElementById('spec-result').innerHTML=`<div class="spec-box">${esc(wf.spec)}</div>`;
+  document.getElementById('spec-card').style.display='block';
+  document.getElementById('save-name').value=wf.name;
+  document.getElementById('save-filename').value=wf.filename;
+  updateCmd();
+  selectCredChoice('now',document.querySelector('.choice-card'));
+  document.getElementById('cred-choice-area').style.display='block';
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function resetAll(){ history=[]; ideas=[]; selectedIdx=null; currentSpec=''; currentIdea=null; credValues={}; credChoice=null; fileText=''; document.getElementById('chat-log').innerHTML=''; document.getElementById('ideas-section').style.display='none'; document.getElementById('idea-text').value=''; document.getElementById('file-badge-area').innerHTML=''; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); showPhase('input'); setStep(1); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2300); }
+
+updateBadge();
+</script>
+</body>
+</html>
