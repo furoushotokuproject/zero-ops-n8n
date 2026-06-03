@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
     'You are an n8n workflow JSON generator.',
     'Output ONLY raw JSON. No markdown. No code blocks. No backticks. No explanation.',
     'Start your response with { and end with }.',
-    'IMPORTANT: Use maximum 5 nodes. Keep the workflow simple and concise.',
+    'IMPORTANT: Use maximum 10 nodes. Keep the workflow simple and concise.',
     'The JSON must match this exact schema:',
     '{',
     '  "name": "string",',
@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
     'Nodes to use: ' + nodeList,
     'Services: ' + svcList,
     '',
-    'IMPORTANT: Maximum 5 nodes. Output ONLY the JSON. Start with { and end with }. No backticks.',
+    'IMPORTANT: Maximum 10 nodes. Output ONLY the JSON. Start with { and end with }. No backticks.',
   ].join('\n');
 
   try {
