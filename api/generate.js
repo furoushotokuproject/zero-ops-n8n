@@ -15,6 +15,7 @@ module.exports = async function handler(req, res) {
     'You are an n8n workflow JSON generator.',
     'Output ONLY raw JSON. No markdown. No code blocks. No backticks. No explanation.',
     'Start your response with { and end with }.',
+    'IMPORTANT: Use maximum 5 nodes. Keep the workflow simple and concise.',
     'The JSON must match this exact schema:',
     '{',
     '  "name": "string",',
@@ -35,7 +36,7 @@ module.exports = async function handler(req, res) {
     'Nodes to use: ' + nodeList,
     'Services: ' + svcList,
     '',
-    'Output ONLY the JSON. Start with { and end with }. No backticks.',
+    'IMPORTANT: Maximum 5 nodes. Output ONLY the JSON. Start with { and end with }. No backticks.',
   ].join('\n');
 
   try {
@@ -48,7 +49,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2000,
+        max_tokens: 8000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
@@ -63,13 +64,28 @@ module.exports = async function handler(req, res) {
     const raw = data.content.map(x => x.text || '').join('').trim();
 
     let jsonStr = raw;
+
+    // Step1: コードブロック除去
     jsonStr = jsonStr.replace(/^[\s\S]*?```(?:json)?[\s]*/i, '');
     jsonStr = jsonStr.replace(/[\s]*```[\s\S]*$/i, '');
     jsonStr = jsonStr.trim();
+
+    // Step2: { から最後の } を切り出す
     const first = jsonStr.indexOf('{');
     const last = jsonStr.lastIndexOf('}');
     if (first !== -1 && last !== -1) {
       jsonStr = jsonStr.slice(first, last + 1);
+    } else {
+      console.error('No JSON object found. raw:', raw);
+      return res.status(500).json({ error: 'Invalid JSON from AI', raw: raw });
+    }
+
+    // Step3: 途中切れチェック（{ と } の数が一致しない場合は不完全）
+    const openBraces = (jsonStr.match(/\{/g) || []).length;
+    const closeBraces = (jsonStr.match(/\}/g) || []).length;
+    if (openBraces !== closeBraces) {
+      console.error('Incomplete JSON. open:', openBraces, 'close:', closeBraces, 'raw:', raw);
+      return res.status(500).json({ error: 'Invalid JSON from AI', raw: raw });
     }
 
     let workflow;
