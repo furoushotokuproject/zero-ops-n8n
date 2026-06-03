@@ -13,7 +13,8 @@
 
   const systemPrompt = [
     'You are an n8n workflow JSON generator.',
-    'Output ONLY a valid n8n workflow JSON object. No markdown, no explanation, no code blocks.',
+    'Output ONLY raw JSON. No markdown. No code blocks. No backticks. No explanation.',
+    'Start your response with { and end with }.',
     'The JSON must match this exact schema:',
     '{',
     '  "name": "string",',
@@ -61,27 +62,16 @@
     const data = await response.json();
     const raw = data.content.map(x => x.text || '').join('').trim();
 
-    // 多段JSON抽出: コードブロック内・生JSON・最初の{〜最後の}の順で試みる
     let jsonStr = raw;
-
-    // Strategy 1: ```json ... ``` または ``` ... ``` ブロック内を抽出
-    const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-    if (codeBlockMatch) {
-      jsonStr = codeBlockMatch[1].trim();
-    } else {
-      // Strategy 2: 先頭・末尾のフェンスを除去
-      jsonStr = raw
-        .replace(/^```json\s*/i, '')
-        .replace(/^```\s*/i, '')
-        .replace(/```\s*$/i, '')
-        .trim();
-    }
-
-    // Strategy 3: { から最後の } までを切り出し（説明文が前後にある場合）
-    const firstBrace = jsonStr.indexOf('{');
-    const lastBrace  = jsonStr.lastIndexOf('}');
-    if (firstBrace > 0 && lastBrace > firstBrace) {
-      jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+    // Step1: コードブロックを除去
+    jsonStr = jsonStr.replace(/^[\s\S]*?```(?:json)?[\s]*/i, '');
+    jsonStr = jsonStr.replace(/[\s]*```[\s\S]*$/i, '');
+    jsonStr = jsonStr.trim();
+    // Step2: { から最後の } を切り出す
+    const first = jsonStr.indexOf('{');
+    const last = jsonStr.lastIndexOf('}');
+    if (first !== -1 && last !== -1) {
+      jsonStr = jsonStr.slice(first, last + 1);
     }
 
     let workflow;
