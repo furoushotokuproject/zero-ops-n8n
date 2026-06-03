@@ -1,4 +1,4 @@
-﻿module.exports = async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -35,7 +35,7 @@
     'Nodes to use: ' + nodeList,
     'Services: ' + svcList,
     '',
-    'Output ONLY the JSON. Nothing else.',
+    'Output ONLY the JSON. Start with { and end with }. No backticks.',
   ].join('\n');
 
   try {
@@ -63,11 +63,9 @@
     const raw = data.content.map(x => x.text || '').join('').trim();
 
     let jsonStr = raw;
-    // Step1: コードブロックを除去
     jsonStr = jsonStr.replace(/^[\s\S]*?```(?:json)?[\s]*/i, '');
     jsonStr = jsonStr.replace(/[\s]*```[\s\S]*$/i, '');
     jsonStr = jsonStr.trim();
-    // Step2: { から最後の } を切り出す
     const first = jsonStr.indexOf('{');
     const last = jsonStr.lastIndexOf('}');
     if (first !== -1 && last !== -1) {
@@ -82,7 +80,6 @@
       return res.status(500).json({ error: 'Invalid JSON from AI', raw: raw });
     }
 
-    // Ensure required fields
     if (!workflow.name)        workflow.name        = title;
     if (!workflow.connections) workflow.connections = {};
     if (!workflow.settings)    workflow.settings    = { executionOrder: 'v1' };
